@@ -95,6 +95,11 @@ func createToolRegistry(workspace string, restrict bool, cfg *config.Config, msg
 	// Terminal/PTY - V16 capability
 	registry.Register(tools.NewTerminalTool())
 
+	// Enhanced search and code tools
+	registry.Register(tools.NewGrepTool(workspace, restrict))
+	registry.Register(tools.NewGlobTool(workspace, restrict))
+	registry.Register(tools.NewGitTool(workspace, restrict))
+
 	// Message tool - available to both agent and subagent
 	// Subagent uses it to communicate directly with user
 	messageTool := tools.NewMessageTool()
