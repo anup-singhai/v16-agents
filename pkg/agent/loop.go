@@ -89,6 +89,9 @@ func createToolRegistry(workspace string, restrict bool, cfg *config.Config, msg
 	// Desktop control - V16 capability
 	registry.Register(tools.NewDesktopTool())
 
+	// Browser automation - V16 capability
+	registry.Register(tools.NewBrowserTool())
+
 	// Message tool - available to both agent and subagent
 	// Subagent uses it to communicate directly with user
 	messageTool := tools.NewMessageTool()
