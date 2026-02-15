@@ -92,6 +92,9 @@ func createToolRegistry(workspace string, restrict bool, cfg *config.Config, msg
 	// Browser automation - V16 capability
 	registry.Register(tools.NewBrowserTool())
 
+	// Terminal/PTY - V16 capability
+	registry.Register(tools.NewTerminalTool())
+
 	// Message tool - available to both agent and subagent
 	// Subagent uses it to communicate directly with user
 	messageTool := tools.NewMessageTool()
