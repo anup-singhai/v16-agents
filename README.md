@@ -9,7 +9,19 @@
 <h1 align="center">V16 Agents</h1>
 
 <p align="center">
-  <strong>Open-source agent runtime, tool adapters, and local orchestration for <a href="https://v16.ai">V16</a></strong>
+  <strong>Run hundreds of autonomous AI agents on your machine.<br />Automate everything — code, workflows, ops, outreach, and more.</strong>
+</p>
+
+<br />
+
+<p align="center">
+  <code>npm install -g v16.ai && v16 connect</code>
+</p>
+
+<br />
+
+<p align="center">
+  <em>"What if every repetitive task you do had an AI agent doing it for you, 24/7?"</em>
 </p>
 
 <p align="center">
@@ -30,6 +42,19 @@
 <br />
 
 ---
+
+<br />
+
+### What people automate with V16
+
+| | |
+|:--|:--|
+| **Code & Engineering** | Refactor codebases, fix bugs, write tests, review PRs — on autopilot |
+| **DevOps & Infra** | Monitor logs, rotate secrets, run health checks on a schedule |
+| **Data & Research** | Scrape, analyze, summarize — agents that feed you insights daily |
+| **B2B Outreach** | Personalized emails, LinkedIn research, lead enrichment — at scale |
+| **Personal Productivity** | Organize files, draft emails, manage todos, track habits |
+| **Content & Marketing** | Generate blog posts, social media, SEO audits — hands-free |
 
 <br />
 
