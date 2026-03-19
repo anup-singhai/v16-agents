@@ -83,6 +83,7 @@ src/
 ├── core/                Socket client, config, logger, command router
 ├── handlers/            Execution handlers, status reporting, tool runner
 ├── scheduler/           Cron-based agent scheduling, autonomous agent loop
+├── templates/           Built-in agent templates (CloudWatch, more coming)
 ├── tools/
 │   ├── adapters/        Tool adapters — Claude Code, Codex, generic CLI
 │   ├── discovery.ts     Auto-detect installed CLI tools

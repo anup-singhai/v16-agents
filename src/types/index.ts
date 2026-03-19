@@ -47,6 +47,21 @@ export interface ReadyPayload {
   version: string;
   capabilities: string[];
   installedTools: InstalledTool[];
+  templates?: AgentTemplatePayload[];
+}
+
+// Template payload synced to V16 on connect
+export interface AgentTemplatePayload {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  icon: string;
+  cliTool: string;
+  defaultSchedule: string;
+  prerequisites: string[];
+  promptTemplate: string;
+  guide: string;
 }
 
 // Tool types

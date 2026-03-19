@@ -4,6 +4,7 @@ import { log } from './logger';
 import { getToken } from './config';
 import { Command, CommandResult, ProgressEvent, ReadyPayload } from '../types';
 import { discoverTools } from '../tools/discovery';
+import { getBuiltInTemplates } from '../templates';
 
 export class SocketClient {
   private socket: Socket | null = null;
@@ -37,8 +38,9 @@ export class SocketClient {
       this.socket.on('connect', async () => {
         log.success(`Connected to ${this.serverUrl}`);
 
-        // Send ready payload with system info + installed tools
+        // Send ready payload with system info, installed tools, and templates
         const tools = await discoverTools();
+        const templates = getBuiltInTemplates();
         const ready: ReadyPayload = {
           platform: os.platform(),
           arch: os.arch(),
@@ -47,10 +49,11 @@ export class SocketClient {
           version: '0.1.0',
           capabilities: ['execute', 'tools', 'agents'],
           installedTools: tools,
+          templates,
         };
 
         this.socket!.emit('ready', ready);
-        log.dim(`Reported ${tools.filter(t => t.available).length} installed tools`);
+        log.dim(`Reported ${tools.filter(t => t.available).length} installed tools, ${templates.length} templates`);
         resolve();
       });
 
