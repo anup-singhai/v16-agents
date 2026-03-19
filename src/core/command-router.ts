@@ -4,18 +4,12 @@ import { statusHandler } from '../handlers/status';
 import { ToolRunner } from '../handlers/tool-runner';
 import { discoverTools } from '../tools/discovery';
 import { getAgents } from './config';
-import { SocketClient } from './socket-client';
 
 export class CommandRouter {
   private toolRunner: ToolRunner;
-  private socketClient: SocketClient | null = null;
 
   constructor() {
     this.toolRunner = new ToolRunner();
-  }
-
-  setSocketClient(client: SocketClient): void {
-    this.socketClient = client;
   }
 
   async route(cmd: Command): Promise<CommandResult['payload']> {
@@ -61,17 +55,7 @@ export class CommandRouter {
     try {
       const result = await this.toolRunner.run(
         { tool, prompt, cwd, args, env },
-        (type, data) => {
-          // Stream progress events back through socket
-          if (this.socketClient) {
-            this.socketClient.sendProgress({
-              id: cmd.id,
-              type,
-              data,
-              timestamp: Date.now(),
-            });
-          }
-        }
+        () => {} // progress streaming handled by HTTP response
       );
 
       return {

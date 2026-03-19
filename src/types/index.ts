@@ -2,7 +2,7 @@
 // V16 Local Agent — Type Definitions
 // ==========================================
 
-// Command protocol types (matches backend)
+// Command protocol types
 export interface Command {
   id: string;
   type: CommandType;
@@ -29,39 +29,6 @@ export interface CommandResult {
     stderr?: string;
     duration?: number;
   };
-}
-
-export interface ProgressEvent {
-  id: string;
-  type: 'stdout' | 'stderr';
-  data: string;
-  timestamp: number;
-}
-
-// Ready payload sent on connection
-export interface ReadyPayload {
-  platform: string;
-  arch: string;
-  hostname: string;
-  cwd: string;
-  version: string;
-  capabilities: string[];
-  installedTools: InstalledTool[];
-  templates?: AgentTemplatePayload[];
-}
-
-// Template payload synced to V16 on connect
-export interface AgentTemplatePayload {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  icon: string;
-  cliTool: string;
-  defaultSchedule: string;
-  prerequisites: string[];
-  promptTemplate: string;
-  guide: string;
 }
 
 // Tool types
@@ -125,4 +92,18 @@ export interface ToolAdapter {
   detect(): Promise<InstalledTool>;
   buildArgs(prompt: string, options?: ToolRunRequest): string[];
   parseOutput?(raw: string): string;
+}
+
+// Template types
+export interface AgentTemplatePayload {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  icon: string;
+  cliTool: string;
+  defaultSchedule: string;
+  prerequisites: string[];
+  promptTemplate: string;
+  guide: string;
 }

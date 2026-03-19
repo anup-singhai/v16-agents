@@ -1,35 +1,21 @@
 import { log } from '../core/logger';
-import { getServerUrl, setServerUrl, loadConfig } from '../core/config';
-import { SocketClient } from '../core/socket-client';
+import { loadConfig } from '../core/config';
 import { CommandRouter } from '../core/command-router';
+import { HttpServer } from '../core/http-server';
 import { AgentLoop } from '../scheduler/agent-loop';
 
-export async function connectCommand(options: { dev?: boolean; server?: string }): Promise<void> {
-  let serverUrl: string;
-
-  if (options.dev) {
-    serverUrl = 'http://localhost:3001';
-    log.dim('Dev mode: connecting to localhost:3001');
-  } else if (options.server) {
-    serverUrl = options.server;
-    setServerUrl(serverUrl);
-  } else {
-    serverUrl = getServerUrl();
-  }
-
+export async function connectCommand(options: { port?: string }): Promise<void> {
   log.header('V16 Agent');
-  log.info(`Connecting to ${serverUrl}...`);
 
-  const client = new SocketClient(serverUrl);
   const router = new CommandRouter();
-  router.setSocketClient(client);
 
-  client.setCommandHandler((cmd) => router.route(cmd));
-
+  // Start local HTTP server
+  const httpPort = options.port ? parseInt(options.port, 10) : undefined;
+  const httpServer = new HttpServer(router, httpPort);
   try {
-    await client.connect();
+    await httpServer.start();
   } catch (err: any) {
-    log.error(`Failed to connect: ${err.message}`);
+    log.error(`Failed to start HTTP server: ${err.message}`);
     process.exit(1);
   }
 
@@ -42,17 +28,17 @@ export async function connectCommand(options: { dev?: boolean; server?: string }
     log.info(`Scheduler started for ${scheduledAgents.length} agent(s)`);
   }
 
-  log.success('Listening for commands. Press Ctrl+C to disconnect.');
+  log.success('Ready. Press Ctrl+C to stop.');
 
   // Keep process alive
   process.on('SIGINT', () => {
-    log.info('Disconnecting...');
-    client.disconnect();
+    log.info('Shutting down...');
+    httpServer.stop();
     process.exit(0);
   });
 
   process.on('SIGTERM', () => {
-    client.disconnect();
+    httpServer.stop();
     process.exit(0);
   });
 }

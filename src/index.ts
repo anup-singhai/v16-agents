@@ -17,9 +17,8 @@ program
 
 program
   .command('connect')
-  .description('Connect to V16 backend and start listening for commands')
-  .option('--dev', 'Connect to local backend (localhost:3001)')
-  .option('--server <url>', 'Custom server URL')
+  .description('Start the local agent HTTP server')
+  .option('--port <port>', 'HTTP server port (default: 7160)')
   .action(connectCommand);
 
 program
