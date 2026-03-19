@@ -1,6 +1,6 @@
 {
   "name": "v16.ai",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "V16 Local Agent — Autonomous AI agent orchestration on your machine",
   "main": "dist/index.js",
   "bin": {

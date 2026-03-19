@@ -33,7 +33,8 @@ export class ClaudeCodeAdapter implements ToolAdapter {
   buildArgs(prompt: string, options?: ToolRunRequest): string[] {
     const args: string[] = [
       '-p', prompt,
-      '--output-format', 'stream-json',
+      '--output-format', 'text',
+      '--max-turns', '10',
     ];
 
     // Add any extra args
@@ -42,28 +43,5 @@ export class ClaudeCodeAdapter implements ToolAdapter {
     }
 
     return args;
-  }
-
-  parseOutput(raw: string): string {
-    // Claude Code stream-json outputs one JSON object per line
-    // Extract the text content from result messages
-    const lines = raw.split('\n').filter(Boolean);
-    const textParts: string[] = [];
-
-    for (const line of lines) {
-      try {
-        const obj = JSON.parse(line);
-        if (obj.type === 'result' && obj.result) {
-          textParts.push(obj.result);
-        } else if (obj.type === 'assistant' && obj.message) {
-          textParts.push(obj.message);
-        }
-      } catch {
-        // Not JSON, include raw line
-        textParts.push(line);
-      }
-    }
-
-    return textParts.join('\n') || raw;
   }
 }

@@ -6,7 +6,7 @@ import { discoverTools } from '../tools/discovery';
 import { getAgents } from './config';
 
 export class CommandRouter {
-  private toolRunner: ToolRunner;
+  public toolRunner: ToolRunner;
 
   constructor() {
     this.toolRunner = new ToolRunner();

@@ -25,7 +25,7 @@ export class ToolRunner {
       const child = spawn(adapter.command, args, {
         cwd: request.cwd || process.cwd(),
         env: { ...process.env, ...request.env },
-        stdio: ['pipe', 'pipe', 'pipe'],
+        stdio: ['ignore', 'pipe', 'pipe'],
       });
 
       let stdout = '';
