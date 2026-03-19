@@ -82,7 +82,7 @@ src/
 ├── cli/                 CLI commands (connect, login, run, agents, tools, status)
 ├── core/                HTTP server, config, logger, command router
 ├── handlers/            Execution handlers, status reporting, tool runner
-├── scheduler/           Cron-based agent scheduling, autonomous agent loop
+├── scheduler/           Cron-based scheduling — syncs with backend, runs locally
 ├── templates/           Built-in agent templates (CloudWatch, more coming)
 ├── tools/
 │   ├── adapters/        Tool adapters — Claude Code, Codex, generic CLI
@@ -95,12 +95,13 @@ src/
 
 ### Agent Definitions
 
-Agents are defined with goals, schedules, and tool assignments. The V16 dashboard creates them; this runtime executes them.
+Agents are defined with goals, schedules, and tool assignments. Create them from the V16 dashboard; this runtime executes them locally and reports results back.
 
-> - Run on a **cron schedule** (e.g., every 30 minutes)
+> - Run on a **cron schedule** (e.g., every 30 minutes) — scheduling happens on your machine, not the cloud
 > - Use any **installed CLI tool** as its executor
 > - Access the **local filesystem** and working directory
-> - Stream output back to the dashboard
+> - Stream output back to the dashboard in real-time
+> - **Report completions** to the backend (triggers Telegram notifications)
 > - Be **paused, resumed, or triggered** from the dashboard
 
 ### Tool Adapters
@@ -144,7 +145,7 @@ v16 connect
 
 | Command | Description |
 |:--------|:------------|
-| `v16 connect` | Start the local agent HTTP server (port 7160) |
+| `v16 connect` | Start the local agent HTTP server + scheduler (port 7160) |
 | `v16 connect --port <port>` | Start on a custom port |
 | `v16 status` | Show connection status and installed tools |
 | `v16 tools` | List detected CLI tools |

@@ -1,5 +1,5 @@
 import { log } from '../core/logger';
-import { loadConfig } from '../core/config';
+import { loadConfig, getToken } from '../core/config';
 import { CommandRouter } from '../core/command-router';
 import { HttpServer } from '../core/http-server';
 import { AgentLoop } from '../scheduler/agent-loop';
@@ -19,13 +19,21 @@ export async function connectCommand(options: { port?: string }): Promise<void> 
     process.exit(1);
   }
 
-  // Start agent scheduler for registered agents with schedules
+  // Start agent scheduler — handles both local config agents and remote (backend API) agents
   const config = loadConfig();
-  const scheduledAgents = config.agents.filter(a => a.schedule);
-  if (scheduledAgents.length > 0) {
+  const localScheduled = config.agents.filter(a => a.schedule);
+  const hasToken = !!getToken();
+
+  if (localScheduled.length > 0 || hasToken) {
     const loop = new AgentLoop(router);
-    loop.start(scheduledAgents);
-    log.info(`Scheduler started for ${scheduledAgents.length} agent(s)`);
+    loop.start(localScheduled);
+
+    if (localScheduled.length > 0) {
+      log.info(`Scheduler: ${localScheduled.length} local agent(s)`);
+    }
+    if (hasToken) {
+      log.info('Scheduler: polling backend for remote agents');
+    }
   }
 
   log.success('Ready. Press Ctrl+C to stop.');
