@@ -62,15 +62,15 @@
 
 This repo is the **open-source local agent** for [V16](https://v16.ai) — autonomous AI agent orchestration that runs on your machine.
 
-It connects to V16, receives orchestration commands, and gives AI agents access to your local environment: **filesystem, CLI tools, git, terminal, and more.** Your API keys never leave your machine.
+It runs a lightweight HTTP server on your machine. The V16 dashboard talks to it directly — no cloud relay, no WebSocket. Your API keys never leave your machine.
 
 ```
-  v16.ai  ════WebSocket════>  v16-agents (your machine)
-                                   │
-                                   ├─ Claude Code
-                                   ├─ Codex
-                                   ├─ Any CLI tool
-                                   └─ Local filesystem, git, terminal
+  v16.ai dashboard  ──HTTP──>  localhost:7160 (your machine)
+                                     │
+                                     ├─ Claude Code
+                                     ├─ Codex
+                                     ├─ Any CLI tool
+                                     └─ Local filesystem, git, terminal
 ```
 
 <br />
@@ -80,7 +80,7 @@ It connects to V16, receives orchestration commands, and gives AI agents access 
 ```
 src/
 ├── cli/                 CLI commands (connect, login, run, agents, tools, status)
-├── core/                Socket client, config, logger, command router
+├── core/                HTTP server, config, logger, command router
 ├── handlers/            Execution handlers, status reporting, tool runner
 ├── scheduler/           Cron-based agent scheduling, autonomous agent loop
 ├── templates/           Built-in agent templates (CloudWatch, more coming)
@@ -100,8 +100,8 @@ Agents are defined with goals, schedules, and tool assignments. The V16 dashboar
 > - Run on a **cron schedule** (e.g., every 30 minutes)
 > - Use any **installed CLI tool** as its executor
 > - Access the **local filesystem** and working directory
-> - Stream output **in real-time** back to the dashboard
-> - Be **paused, resumed, or triggered** remotely
+> - Stream output back to the dashboard
+> - Be **paused, resumed, or triggered** from the dashboard
 
 ### Tool Adapters
 
@@ -131,10 +131,11 @@ npm install -g v16.ai
 # 1. Login with your V16 token (from v16.ai/dashboard)
 v16 login --token <your-token>
 
-# 2. Connect to V16
+# 2. Start the agent
 v16 connect
 
-# Done. Create and manage agents from the dashboard.
+# Agent runs on http://localhost:7160
+# Create and manage agents from the dashboard.
 ```
 
 <br />
@@ -143,8 +144,8 @@ v16 connect
 
 | Command | Description |
 |:--------|:------------|
-| `v16 connect` | Connect to V16 and listen for commands |
-| `v16 connect --dev` | Connect to local dev server |
+| `v16 connect` | Start the local agent HTTP server (port 7160) |
+| `v16 connect --port <port>` | Start on a custom port |
 | `v16 status` | Show connection status and installed tools |
 | `v16 tools` | List detected CLI tools |
 | `v16 run <tool> <prompt>` | Run a CLI tool locally |
@@ -158,43 +159,38 @@ v16 connect
 ## Architecture
 
 ```
-                    ┌───────────────────────────┐
-                    │                           │
-                    │      V16 Cloud            │
-                    │      v16.ai               │
-                    │                           │
-                    │   Dashboard  ·  API  ·    │
-                    │   Scheduling · Alerts     │
-                    │                           │
-                    └─────────────┬─────────────┘
-                                  │
-                            ◆ WebSocket ◆
-                            (encrypted)
-                                  │
-  ┌───────────────────────────────┴───────────────────────────────┐
-  │                                                               │
-  │   Your Machine                                                │
-  │                                                               │
-  │   ┌─────────────┐    ┌─────────────┐    ┌─────────────────┐  │
-  │   │             │    │             │    │                 │  │
-  │   │   Agent     │───▶│  Scheduler  │───▶│  Tool           │  │
-  │   │   Runtime   │    │  (Cron)     │    │  Auto-discover  │  │
-  │   │             │    │             │    │                 │  │
-  │   └─────────────┘    └─────────────┘    └────────┬────────┘  │
-  │                                                  │           │
-  │   ┌──────────────────────────────────────────────┴────────┐  │
-  │   │                                                       │  │
-  │   │   Tool Adapters                                       │  │
-  │   │                                                       │  │
-  │   │   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │  │
-  │   │   │ Claude Code │  │    Codex    │  │ Generic CLI │  │  │
-  │   │   └─────────────┘  └─────────────┘  └─────────────┘  │  │
-  │   │                                                       │  │
-  │   └───────────────────────────────────────────────────────┘  │
-  │                                                               │
-  │   🔒  API keys, code, and data never leave this machine.     │
-  │                                                               │
-  └───────────────────────────────────────────────────────────────┘
+  ┌───────────────────────────┐
+  │                           │
+  │   V16 Dashboard           │
+  │   v16.ai                  │
+  │                           │
+  │   Agent CRUD · Scheduling │
+  │   History · Alerts        │
+  │                           │
+  └─────────────┬─────────────┘
+                │
+          HTTP (localhost)
+                │
+  ┌─────────────┴─────────────────────────────────────────────┐
+  │                                                           │
+  │   Your Machine — localhost:7160                           │
+  │                                                           │
+  │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐  │
+  │   │  Express     │───▶│  Scheduler  │───▶│  Tool       │  │
+  │   │  HTTP Server │    │  (Cron)     │    │  Discovery  │  │
+  │   └─────────────┘    └─────────────┘    └──────┬──────┘  │
+  │                                                │          │
+  │   ┌────────────────────────────────────────────┴───────┐  │
+  │   │   Tool Adapters                                    │  │
+  │   │                                                    │  │
+  │   │   ┌─────────────┐ ┌─────────────┐ ┌────────────┐  │  │
+  │   │   │ Claude Code │ │    Codex    │ │ Generic CLI│  │  │
+  │   │   └─────────────┘ └─────────────┘ └────────────┘  │  │
+  │   └────────────────────────────────────────────────────┘  │
+  │                                                           │
+  │   API keys, code, and data never leave this machine.      │
+  │                                                           │
+  └───────────────────────────────────────────────────────────┘
 ```
 
 <br />
@@ -203,10 +199,10 @@ v16 connect
 
 | | |
 |:--|:--|
-| **4 dependencies** | socket.io-client, commander, chalk, ora. Nothing else. |
+| **4 dependencies** | express, commander, chalk, ora. Nothing else. |
 | **No Docker, no VMs** | Pure JavaScript. Runs anywhere Node.js runs. |
 | **BYOK** | Bring Your Own Keys. V16 orchestrates; your tools call the APIs. |
-| **Lightweight daemon** | Single WebSocket, spawns subprocesses, streams output. |
+| **Local HTTP** | Express server on localhost. No cloud relay, no WebSocket. |
 | **Open source** | Agent definitions and tool adapters are fully open. Build your own. |
 
 <br />
